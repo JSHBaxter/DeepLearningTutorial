@@ -42,10 +42,11 @@ dense1 = tf.layers.dense(tf.layers.dropout(tf.layers.flatten(conv3),rate=0.25),5
 pred_y_logits = tf.layers.dense(tf.layers.dropout(dense1,rate=0.25),10)
 pred_y = tf.math.argmax(pred_y_logits,axis=-1)
 pred_angle = tf.layers.dense(tf.layers.dropout(dense1,rate=0.25),1)
-pred_angle_unc = tf.layers.dense(tf.layers.dropout(dense1,rate=0.25),1)
+pred_angle_unc_logit = tf.layers.dense(tf.layers.dropout(dense1,rate=0.25),1)
+pred_angle_unc = tf.exp(pred_angle_unc_logit)
 
 loss_y = tf.losses.softmax_cross_entropy(tf.reshape(tf.one_hot(y,10),[-1,10]),pred_y_logits)
-loss_angle = tf.math.reduce_mean(0.5*tf.math.square((pred_angle-angle)*tf.exp(-pred_angle_unc)) + pred_angle_unc)
+loss_angle = tf.math.reduce_mean(0.5*tf.math.square((pred_angle-angle)*tf.exp(-pred_angle_unc_logit)) + pred_angle_unc_logit)
 
 error_angle = tf.math.sqrt(tf.math.reduce_mean(tf.math.square((pred_angle-angle))))
 uncertainty_angle = tf.math.reduce_mean(tf.exp(pred_angle_unc))
