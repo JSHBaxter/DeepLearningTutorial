@@ -4,11 +4,24 @@ import matplotlib.pyplot as plt
 import time
 import rotate_mnist as rmn
 
+from tensorflow.python.framework import ops
+import os
+
+so_dir_path = os.path.dirname(os.path.realpath(__file__))
+module = tf.load_op_library(so_dir_path + '/gaussian_error.so')
+
+@ops.RegisterGradient("GaussianError")
+def _gaussian_error_grad_cc(op, grad):
+    #diff = op.inputs[0]-op.inputs[2]
+    #isig = tf.exp(-op.inputs[1])
+    #return (grad*diff*isig*isig, grad*(1-diff*diff*isig*isig), -grad*diff*isig*isig)
+    return module.gaussian_error_grad(op.inputs[0], op.inputs[1], op.inputs[2], grad)
+
 pi = 3.141592
 
 
 def gauss_loss(mean, log_sigma, val):
-    return tf.math.reduce_mean(0.5*tf.math.square((mean-val)*tf.exp(-log_sigma)) + log_sigma)
+    return tf.math.reduce_mean(module.gaussian_error(mean,log_sigma,val))
 
 
 #get dataset
@@ -21,14 +34,14 @@ x_train, x_test = x_train / 255.0, x_test / 255.0
 #parameters
 iterations = 1000
 learn_rate = 0.0001
-batch_size = 250
+batch_size = 100
 dataset_size = y_train.shape[0]
 test_dataset_size = y_test.shape[0]
 num_batches = dataset_size // batch_size
 num_test_batches = test_dataset_size // batch_size
 num_batches_per_it = num_test_batches
 report_iter = 10
-img_size = 32
+img_size = 64
 
 
 #build network
@@ -67,7 +80,8 @@ uncertainty_angle = tf.math.sqrt(tf.math.reduce_mean(tf.math.square(pred_angle_u
 #initializer for network
 init = tf.global_variables_initializer()
 
-with tf.Session() as session:
+config = tf.ConfigProto(log_device_placement=False, device_count = {'GPU': 1})
+with tf.Session(config=config) as session:
 
     #initalize network
     session.run(init)
@@ -101,7 +115,7 @@ with tf.Session() as session:
                 x: this_batch_x,
                 y: this_batch_y,
                 angle: this_batch_theta,
-                prob: 0.25,
+                prob: 0.0
             })
             acc_cost += this_cost
             acc_cost_y += this_loss_y
@@ -128,7 +142,7 @@ with tf.Session() as session:
                     x: this_batch_x,
                     y: this_batch_y,
                     angle: this_batch_theta,
-                    prob: 0.0,
+                    prob: 0.0
                 })
                 for k in range(batch_size):
                     pred_y_log[b*batch_size+k] = this_pred_y[k]
