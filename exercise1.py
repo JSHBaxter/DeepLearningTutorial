@@ -55,7 +55,7 @@ pred_y = tf.math.argmax(pred_y_logits,axis=-1)
 pred_angle_unc = tf.exp(pred_angle_unc_logit)
 
 #compute losses and the network cost
-loss_y = tf.losses.softmax_cross_entropy(tf.reshape(tf.one_hot(y,10),[-1,10]),pred_y_logits)
+loss_y = tf.losses.softmax_cross_entropy(tf.one_hot(y,10),[-1,10]),pred_y_logits)
 loss_angle = gauss_loss(pred_angle,pred_angle_unc_logit,angle)
 cost = loss_y + loss_angle
 train = tf.train.AdamOptimizer(learn_rate).minimize(cost)
@@ -66,6 +66,8 @@ uncertainty_angle = tf.math.sqrt(tf.math.reduce_mean(tf.math.square(pred_angle_u
 
 #initializer for network
 init = tf.global_variables_initializer()
+
+#prepare for visualization
 
 with tf.Session() as session:
 
@@ -110,7 +112,7 @@ with tf.Session() as session:
             acc_unc_angle += this_unc_angle
 
         print(str(iter) + " Losses: " + str(acc_cost / num_batches) + "\tnumber " + str(acc_cost_y / num_batches) + "\t angle: " + str(acc_cost_angle / num_batches) + " "
-              + str(acc_err_angle / num_batches) + " " + str(acc_unc_angle / num_batches))
+              + str(acc_err_angle / num_batches) + " " + str(acc_unc_angle / num_batches), flush=True)
 
         # evaluate network
         if( iter % report_iter == 0):
