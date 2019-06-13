@@ -45,8 +45,20 @@ def digit_loss(pred_logits, ground_truth):
     return tf.losses.sparse_softmax_cross_entropy(labels=ground_truth, logits=pred_logits)
 
 
+#TODO: Gaussian loss with uncertainty
+from tensorflow.python.framework import ops
+import os
+
+# find custom module and import it
+
+# register the gradient operator to the forward operator
+@ops.RegisterGradient("GaussianError")
+def _gaussian_error_grad_cc(op, grad):
+    return tf.zeros(shape=())
+
+# use the custom operator in the loss
 def gauss_loss(mean, log_sigma, val):
-    return tf.math.reduce_mean(0.5*tf.math.square((mean-val)*tf.exp(-log_sigma)) + log_sigma)
+    return tf.zeros(shape=())
 
 
 

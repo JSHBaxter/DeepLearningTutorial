@@ -56,14 +56,14 @@ def build_database(number,size,snr):
 # We are performing softmax first, that way, q_in/q_out is expressed as logits, same as p_in
 def DenseCRF_MeanApproxIteration(q_in, p_in, kernel, compatibility):
     # perform softmax on Q to put in [0,1] range
-    q_in = tf.nn.softmax(q_in)
 
-    # perform message passing followed by the compatibility transform
-    q_weighted = tf.nn.separable_conv2d(q_in, kernel, compatibility, strides=[1,1,1,1], padding='SAME')
+
+    # perform message passing followed by the compatibility transform as separable convolution
+
 
     # add in unary potentials and output
-    q_out = p_in + q_weighted
-    return q_out
+
+    return q_in
 
 
 # Create Gaussian kernel

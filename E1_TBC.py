@@ -45,8 +45,9 @@ def digit_loss(pred_logits, ground_truth):
     return tf.losses.sparse_softmax_cross_entropy(labels=ground_truth, logits=pred_logits)
 
 
+#TODO: Gaussian loss with uncertainty
 def gauss_loss(mean, log_sigma, val):
-    return tf.math.reduce_mean(0.5*tf.math.square((mean-val)*tf.exp(-log_sigma)) + log_sigma)
+    return tf.zeros(shape=())
 
 
 
